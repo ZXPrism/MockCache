@@ -10,7 +10,7 @@ namespace mockcache {
     class CacheDirect : public CacheBase {
     public:
         CacheDirect(std::shared_ptr<Memory> mem, unsigned blockWidthBit,
-                    unsigned cacheSizeBit);
+                    unsigned cacheEntrySizeBit);
         ~CacheDirect();
 
         virtual HitStatus Read(unsigned address, unsigned width) override;
@@ -20,7 +20,8 @@ namespace mockcache {
         virtual void WriteBlock(unsigned address) override;
 
     private:
-        std::vector<CacheEntry> _Data;
+        std::vector<CacheEntry> _CacheEntries;
+        std::uint8_t *_CacheBlocks;
     };
 
 } // namespace mockcache

@@ -7,15 +7,15 @@
 namespace mockcache {
 
     CacheBase::CacheBase(std::shared_ptr<Memory> mem, unsigned blockWidthBit,
-                         unsigned cacheSizeBit)
+                         unsigned cacheEntrySizeBit)
         : _Mem(mem), _BlockWidthBit(blockWidthBit),
-          _CacheSizeBit(cacheSizeBit) {
-        if (blockWidthBit == 0 || cacheSizeBit == 0 ||
-            blockWidthBit + cacheSizeBit > 32) {
+          _CacheSizeBit(cacheEntrySizeBit) {
+        if (blockWidthBit == 0 || cacheEntrySizeBit == 0 ||
+            blockWidthBit + cacheEntrySizeBit > 32) {
             throw std::invalid_argument(
                 std::format("Invalid cache settings: blockWidthBit {} and "
-                            "cacheSizeBit {}!",
-                            blockWidthBit, cacheSizeBit));
+                            "cacheEntrySizeBit {}!",
+                            blockWidthBit, cacheEntrySizeBit));
         }
         _OffsetMask = (1U << _BlockWidthBit) - 1;
         _CacheIndexMask = (1U << _CacheSizeBit) - 1;

@@ -8,24 +8,26 @@
 namespace mockcache {
 
     CacheDirect::CacheDirect(std::shared_ptr<Memory> mem,
-                             unsigned blockWidthBit, unsigned cacheSizeBit)
-        : CacheBase(mem, blockWidthBit, cacheSizeBit) {
+                             unsigned blockWidthBit, unsigned cacheEntrySizeBit)
+        : CacheBase(mem, blockWidthBit, cacheEntrySizeBit) {
 
         int nBlockWidth = 1 << blockWidthBit;
-        _Data.resize(static_cast<std::size_t>(1) << cacheSizeBit);
+        std::size_t cacheEntrySize = static_cast<std::size_t>(1)
+                                     << cacheEntrySizeBit;
+        _CacheEntries.resize(cacheEntrySize);
+        _CacheBlocks = new std::uint8_t[cacheEntrySize * nBlockWidth];
 
-        for (auto &entry : _Data) {
+        for (int i = 0; auto &entry : _CacheEntries) {
             entry._Valid = false;
             entry._Dirty = false;
             entry._Tag = 0;
-            entry._Block = new std::uint8_t[nBlockWidth];
+            entry._Block = _CacheBlocks + i * nBlockWidth;
+            ++i;
         }
     }
 
     CacheDirect::~CacheDirect() {
-        for (auto &entry : _Data) {
-            delete[] entry._Block;
-        }
+        delete[] _CacheBlocks;
     }
 
     HitStatus CacheDirect::Read(unsigned address, unsigned width) {
@@ -43,7 +45,7 @@ namespace mockcache {
             if (cacheIndex != prevCacheIndex || i == width) {
                 status._Cost += COST_HIT;
 
-                auto &entry = _Data[prevCacheIndex];
+                auto &entry = _CacheEntries[prevCacheIndex];
                 if (entry._Valid && entry._Tag == prevTag) {
                 } else {
                     if (entry._Valid && entry._Dirty) {
@@ -89,7 +91,7 @@ namespace mockcache {
             if (cacheIndex != prevCacheIndex || i == width) {
                 status._Cost += COST_HIT;
 
-                auto &entry = _Data[prevCacheIndex];
+                auto &entry = _CacheEntries[prevCacheIndex];
                 if (entry._Valid && entry._Tag == prevTag) {
                 } else {
                     if (entry._Valid && entry._Dirty) {
@@ -123,20 +125,22 @@ namespace mockcache {
         address &= ~_OffsetMask; // align the address
         int tag = address >> (_BlockWidthBit + _CacheSizeBit);
         int cacheIndex = address >> _BlockWidthBit & _CacheIndexMask;
-        _Data[cacheIndex]._Tag = tag;
-        _Data[cacheIndex]._Valid = true;
-        _Data[cacheIndex]._Dirty = false;
-        _Mem->CopyOut(address, _Data[cacheIndex]._Block, 1 << _BlockWidthBit);
+        _CacheEntries[cacheIndex]._Tag = tag;
+        _CacheEntries[cacheIndex]._Valid = true;
+        _CacheEntries[cacheIndex]._Dirty = false;
+        _Mem->CopyOut(address, _CacheEntries[cacheIndex]._Block,
+                      1 << _BlockWidthBit);
     }
 
     void CacheDirect::WriteBlock(unsigned address) {
         address &= ~_OffsetMask; // align the address
         int tag = address >> (_BlockWidthBit + _CacheSizeBit);
         int cacheIndex = address >> _BlockWidthBit & _CacheIndexMask;
-        _Data[cacheIndex]._Tag = tag;
-        _Data[cacheIndex]._Valid = true;
-        _Data[cacheIndex]._Dirty = false;
-        _Mem->CopyIn(_Data[cacheIndex]._Block, address, 1 << _BlockWidthBit);
+        _CacheEntries[cacheIndex]._Tag = tag;
+        _CacheEntries[cacheIndex]._Valid = true;
+        _CacheEntries[cacheIndex]._Dirty = false;
+        _Mem->CopyIn(_CacheEntries[cacheIndex]._Block, address,
+                     1 << _BlockWidthBit);
     }
 
 } // namespace mockcache

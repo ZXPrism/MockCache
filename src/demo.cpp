@@ -24,10 +24,6 @@ int main() {
         return dist(engine);
     };
 
-    // Remove the annotation marks in CacheBase::_PrintStatus..
-    // ..if you want to print the status each time when accessing the cache
-    // I will add some variables to control it in the future
-
     std::cout << "[NO CACHE]" << ' ' << "[CACHE 1]" << ' ' << "[CACHE 2]"
               << '\n';
     std::cout << "[Cache 1 Miss Rate]" << ' ' << "[Cache 2 Miss Rate]" << '\n'

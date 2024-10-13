@@ -13,7 +13,7 @@ namespace mockcache {
     class CacheBase {
     public:
         CacheBase(std::shared_ptr<Memory> mem, unsigned blockWidthBit,
-                  unsigned cacheSizeBit);
+                  unsigned cacheEntrySizeBit);
         virtual ~CacheBase() = default;
 
         virtual HitStatus Read(unsigned address, unsigned width) = 0;
