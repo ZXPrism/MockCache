@@ -21,8 +21,8 @@ namespace mockcache {
             entry._Valid = false;
             entry._Dirty = false;
             entry._Tag = 0;
-            entry._Block = _CacheBlocks + i * nBlockWidth;
-            ++i;
+            entry._Block = _CacheBlocks + i;
+            i += nBlockWidth;
         }
     }
 
