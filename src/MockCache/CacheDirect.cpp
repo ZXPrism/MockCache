@@ -30,9 +30,6 @@ namespace mockcache {
 
     HitStatus CacheDirect::Read(unsigned address, unsigned width) {
         HitStatus status;
-        status._Result = 0;
-        status._Cost = 0;
-        status._Miss = false;
 
         unsigned prevByteNo = 0;
         unsigned prevCacheIndex = address >> _BlockWidthBit & _CacheIndexMask;
@@ -48,12 +45,8 @@ namespace mockcache {
 
                 auto &entry = _Data[prevCacheIndex];
                 if (entry._Valid && entry._Tag == prevTag) {
-                    _PrintStatus(0, prevCacheIndex, address);
                 } else {
-                    _PrintStatus(1, prevCacheIndex, address);
-
                     if (entry._Valid && entry._Dirty) {
-                        _PrintStatus(2, prevCacheIndex, address);
                         status._Cost += COST_MISS * _BlockWidthBit;
                         WriteBlock(address + prevByteNo);
                     }
@@ -83,9 +76,6 @@ namespace mockcache {
     HitStatus CacheDirect::Write(unsigned address, std::uint64_t value,
                                  unsigned width) {
         HitStatus status;
-        status._Result = 0;
-        status._Cost = 0;
-        status._Miss = false;
 
         unsigned prevByteNo = 0;
         unsigned prevCacheIndex = address >> _BlockWidthBit & _CacheIndexMask;
@@ -101,12 +91,8 @@ namespace mockcache {
 
                 auto &entry = _Data[prevCacheIndex];
                 if (entry._Valid && entry._Tag == prevTag) {
-                    _PrintStatus(0, prevCacheIndex, address);
                 } else {
-                    _PrintStatus(1, prevCacheIndex, address);
-
                     if (entry._Valid && entry._Dirty) {
-                        _PrintStatus(2, prevCacheIndex, address);
                         WriteBlock(address + prevByteNo);
 
                         status._Cost += COST_MISS * _BlockWidthBit;

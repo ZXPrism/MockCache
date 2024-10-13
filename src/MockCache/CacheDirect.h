@@ -13,11 +13,11 @@ namespace mockcache {
                     unsigned cacheSizeBit);
         ~CacheDirect();
 
-        virtual HitStatus Read(unsigned address, unsigned width);
+        virtual HitStatus Read(unsigned address, unsigned width) override;
         virtual HitStatus Write(unsigned address, std::uint64_t value,
-                                unsigned width);
-        virtual void LoadBlock(unsigned address);
-        virtual void WriteBlock(unsigned address);
+                                unsigned width) override;
+        virtual void LoadBlock(unsigned address) override;
+        virtual void WriteBlock(unsigned address) override;
 
     private:
         std::vector<CacheEntry> _Data;
