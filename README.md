@@ -47,19 +47,31 @@ For simplicity, I didn't introduce command arguments in the program. In case you
 - `2024/10/13`: Miscs & ..
 
 
-## Design Notes
+## Design Notes (WIP, the content is incomplete!)
  
 This project is merely a "behavioral simulation", so its basic mechansim differs from real caches. For example, associative caches use comparators which work in parallel to find the right cache line with provided tag, but I simply used a hash map.
 
 ### Direct Mapped Cache
-Easy to implement. There is only one tricky part: since one access request may comprises multiple blocks, we need to divide the address into several segments which belongs to each block, and combine the final result.
+Easy to implement. There is only one tricky part: since one access request may cover **multiple blocks**, we need to divide the address into several segments which belongs to each block, and combine the final result.
 
 My solution is to use a simple two pointers approach for segmentation, then process each segments separately.
 
 
 ### Cache Array
-Modern cache often have multiple layers, it's not enough to realize 3 types of caches only, so I introduced the concept of `Cache Array`.
+Modern cache often have multiple layers, it's not enough to realize 3 types of caches only, so I introduced the concept named `CacheArray`.
 
 The problem is **interaction**. I need to figure out an efficient and elegant way to organize each layer and let them interact with each other.
 
-Consider we have 3 layers, denoted by L1, L2 and L3.
+Suppose we have 3 layers, denoted by L1, L2 and L3. These caches are intrinsically 3 pointers of type `CacheBase*`.
+
+Now the user requests a read operation. Firstly we will look up in L1 cache with its `Read` function. Note that one operation may consists of multiple blocks, **for each missed block**, L1 should issue a message to `CacheArray`, telling it to search the next layer (L2). If we find the data, we will send it back to L1. If not, search L3... No matter where we find the data, **only blocks from L1 will be replaced**.
+
+You may ask, what about L2 and L3? **My strategy is, push data to L2, L3 when evicting dirty data.**
+
+Such action also requires a report from the layer to `CacheArray`, which then ...fixmemmmmmmmm 
+
+This is a recursive pattern but the recursion is contolled by `CacheArray` because it has the only access to all layers, while "there exists other layers" are transparent for each cache layer.
+
+Hence, I introduced a callback parameter in `Read` (see [CacheBase.h](src/MockCache/CacheBase.h)). The function should return the data if encountering a cache miss during `Read`.
+
+A more detailed encapsulation:
